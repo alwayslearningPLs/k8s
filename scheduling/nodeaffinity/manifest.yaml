@@ -1,0 +1,47 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+spec:
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-node-affinity
+  namespace: test
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/os
+            operator: In
+            values:
+            - linux
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1 # This value is important when there are more than one node that satisfied the preferred conditions. The values are between 1-100.
+        preference:
+          matchExpressions:
+          - key: sample-label-key-2
+            operator: In
+            values:
+            - sample-label-value-1
+            - sample-label-value-2
+      - weight: 50
+        preference:
+          matchExpressions:
+          - key: sample-label-key-2
+            operator: In # In, NotIn, Exists, DoesNotExists, Gt, Lt
+            values:
+            - sample-label-value-1
+            - sample-label-value-2
+  containers:
+  - name: nginx-web
+    image: nginx:1.22
+    imagePullPolicy: IfNotPresent
+    ports:
+    - name: http
+      containerPort: 80
+      protocol: TCP

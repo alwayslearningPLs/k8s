@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: testing-client
+  namespace: test
+spec:
+  containers:
+  - name: testing-client
+    image: ubuntu:22.04
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/bash"]
+    args: ["-c", "sleep infinity"]
+    securityContext:
+      privileged: true

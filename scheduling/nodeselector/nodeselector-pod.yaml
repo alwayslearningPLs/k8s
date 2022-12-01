@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+spec:
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nodeselector-pod
+  namespace: test
+spec:
+  containers:
+  - name: nodeselector-pod-container
+    image: alpine:3.16
+    imagePullPolicy: IfNotPresent
+  nodeSelector:
+    node-restriction.kubernetes.io/whatever: sure

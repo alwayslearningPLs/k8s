@@ -1,0 +1,95 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+spec:
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mem-cpu-demo-l
+  namespace: test
+spec:
+  limits:
+  - type: Container
+    default: # default limits
+      cpu: "300m"
+      memory: "300Mi"
+    defaultRequest: # default request
+      cpu: "300m"
+      memory: "300Mi"
+    max:
+      cpu: "500m"
+      memory: "1Gi"
+    min:
+      cpu: "200m"
+      memory: "100Mi"
+  - type: PersistentVolumeClaim
+    default:
+      storage: 1Gi
+    defaultRequest:
+      storage: 1Gi
+    max:
+      storage: 2Gi
+    min:
+      storage: 1Gi
+---
+# kubectl describe ResourceQuota/mem-cpu-demo -n test
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: mem-cpu-demo
+  namespace: test
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 2Gi
+    limits.cpu: "2"
+    limits.memory: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-web
+  namespace: test
+  labels:
+    purpose: testing
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      purpose: testing
+      env: web
+  template:
+    metadata:
+      labels:
+        purpose: testing
+        env: web
+    spec:
+      containers:
+      - name: nginx-web
+        image: nginx:1.22
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+  namespace: test
+  labels:
+    purpose: testing
+spec:
+  selector:
+    purpose: testing
+    env: web
+  ports:
+  - port: 8080
+    targetPort: 80
+    protocol: TCP
+    name: http
+  type: NodePort

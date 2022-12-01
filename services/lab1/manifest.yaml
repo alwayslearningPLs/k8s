@@ -1,0 +1,57 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+spec:
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-web-svc
+  namespace: test
+  labels:
+    env: des
+spec:
+  ports:
+  - protocol: TCP
+    port: 9876
+    targetPort: 9876
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: simple-web-svc-1
+  namespace: test
+  labels:
+    endpointslice.kubernetes.io/managed-by: ivan-staff
+    kubernetes.io/service-name: simple-web-svc
+    label: simple-web-svc
+addressType: IPv4
+ports:
+- name: ''
+  appProtocol: http
+  protocol: TCP
+  port: 9876
+endpoints:
+- addresses:
+  - 'EXTERNAL_IP_ADDRESS'
+  - 'POD_IP'
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-client
+  namespace: test
+spec:
+  restartPolicy: Never
+  containers:
+  - name: test-client
+    image: alpine:3.16
+    imagePullPolicy: IfNotPresent
+    env:
+    - name: TRIES
+      value: "10"
+    command: ['/bin/sh']
+    args: ['-c', 'apk add bind-tools curl; dig simple-web-svc.test.svc.cluster.local.; while [ $TRIES -gt 0 ]; do curl http://simple-web-svc.test.svc.cluster.local.:9876/ping; sleep 1s; TRIES=$((TRIES - 1)); done']
+---

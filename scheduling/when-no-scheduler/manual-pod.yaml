@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-scheduling
+spec:
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: manual-pod
+  namespace: test-scheduling
+  labels:
+    purpose: scheduling
+spec:
+  containers:
+  - name: pod-manual-scheduling
+    image: nginx:1.22
+    ports:
+    - containerPort: 80
+      protocol: TCP
+      name: http
+  nodeName: desktop-0d7a4b4 # We can specify the NodeName when no scheduler is present. This property is not usually set by the user, because it is set by the kube-scheduler.
