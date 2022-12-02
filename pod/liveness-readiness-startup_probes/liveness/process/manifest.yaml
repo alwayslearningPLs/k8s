@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+spec:
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dumb-process
+  namespace: test
+  labels:
+    app.kubernetes.io/name: dumb-process
+    app.kubernetes.io/part-of: liveness
+    app.kubernetes.io/component: script
+spec:
+  restartPolicy: OnFailure
+  containers:
+  - name: dumb-process
+    image: alpine:3.16
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/sh"]
+    args: ['-c', 'touch /tmp/healthy; sleep 30s; rm -f /tmp/healthy; sleep 500s']
+    livenessProbe:
+      exec:
+        command: ['cat', '/tmp/healthy']
+      initialDelaySeconds: 5
+      periodSeconds: 15
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 1
