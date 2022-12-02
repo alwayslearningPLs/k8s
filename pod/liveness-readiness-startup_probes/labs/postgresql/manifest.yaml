@@ -1,0 +1,69 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+spec:
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-with-probes
+  namespace: test
+  labels:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/part-of: probes
+    app.kubernetes.io/component: database
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/part-of: probes
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: 5432
+    protocol: TCP
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgresql-with-probes
+  namespace: test
+  labels:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/part-of: probes
+    app.kubernetes.io/component: database
+spec:
+  restartPolicy: OnFailure
+  containers:
+  - name: postgresql
+    image: postgres:14-alpine
+    imagePullPolicy: IfNotPresent
+    env:
+    - name: POSTGRES_DB
+      value: example
+    - name: POSTGRES_USER
+      value: postgres
+    - name: POSTGRES_PASSWORD
+      value: "abc123."
+    ports:
+    - name: postgresql
+      containerPort: 5432
+      protocol: TCP
+    livenessProbe:
+      exec:
+        command: ['psql', '-w', '-U', '$(POSTGRES_USER)', '-d', '$(POSTGRES_DB)', '-c', 'SELECT 1']
+      initialDelaySeconds: 5
+      periodSeconds: 30
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      exec:
+        command: ['pg_isready', '-h', 'localhost', '-p', '5432', '-U', '$(POSTGRES_USER)', '-d', '$(POSTGRES_DB)'] # We are testing using two different commands. This one is available after 11 version
+      initialDelaySeconds: 5
+      periodSeconds: 30
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
