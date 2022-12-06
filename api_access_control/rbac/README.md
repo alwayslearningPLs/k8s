@@ -20,3 +20,7 @@ You can check the configuration file `/etc/kubernetes/manifest` on your master n
 - watch
 - delete
 - patch
+
+## Secrets
+
+When creating a serviceAccount, you can get the token from its description to make API requests to the api-server if you have the right permission.
