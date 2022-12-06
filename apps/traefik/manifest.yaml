@@ -1,0 +1,194 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "9100"
+    prometheus.io/scrape: "true"
+  creationTimestamp: "2022-07-04T10:50:08Z"
+  generateName: traefik-df4ff85d6-
+  labels:
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: traefik
+    helm.sh/chart: traefik-10.19.300
+    pod-template-hash: df4ff85d6
+  name: traefik-df4ff85d6-w7kgq
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: traefik-df4ff85d6
+    uid: 615e206f-3376-4238-b841-0ba75915b698
+  resourceVersion: "107415"
+  uid: fc51c216-e04e-42e8-8b27-2c6cf5ddd961
+spec:
+  containers:
+  - args:
+    - --global.checknewversion
+    - --global.sendanonymoususage
+    - --entrypoints.metrics.address=:9100/tcp
+    - --entrypoints.traefik.address=:9000/tcp
+    - --entrypoints.web.address=:8000/tcp
+    - --entrypoints.websecure.address=:8443/tcp
+    - --api.dashboard=true
+    - --ping=true
+    - --metrics.prometheus=true
+    - --metrics.prometheus.entrypoint=metrics
+    - --providers.kubernetescrd
+    - --providers.kubernetesingress
+    - --providers.kubernetesingress.ingressendpoint.publishedservice=kube-system/traefik
+    - --entrypoints.websecure.http.tls=true
+    image: rancher/mirrored-library-traefik:2.6.2
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /ping
+        port: 9000
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 2
+    name: traefik
+    ports:
+    - containerPort: 9100
+      name: metrics
+      protocol: TCP
+    - containerPort: 9000
+      name: traefik
+      protocol: TCP
+    - containerPort: 8000
+      name: web
+      protocol: TCP
+    - containerPort: 8443
+      name: websecure
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 1
+      httpGet:
+        path: /ping
+        port: 9000
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 2
+    resources: {}
+    securityContext:
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsGroup: 65532
+      runAsNonRoot: true
+      runAsUser: 65532
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /data
+      name: data
+    - mountPath: /tmp
+      name: tmp
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-k6mt5
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: desktop-0d7a4b4
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000000000
+  priorityClassName: system-cluster-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 65532
+  serviceAccount: traefik
+  serviceAccountName: traefik
+  terminationGracePeriodSeconds: 60
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/control-plane
+    operator: Exists
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Exists
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - emptyDir: {}
+    name: data
+  - emptyDir: {}
+    name: tmp
+  - name: kube-api-access-k6mt5
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-04T10:50:08Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-12-02T03:42:05Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-12-02T03:42:05Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-04T10:50:08Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: docker://4eec0f6432ce26340b01f9edd6a8280e6747180a384bb1cd23c05fe7d4bb92f1
+    image: rancher/mirrored-library-traefik:2.6.2
+    imageID: docker://sha256:72463d8000a351a929f93834ecbb65b63e1d5dd2990f9c4b8f7cd28a66acec44
+    lastState:
+      terminated:
+        containerID: docker://26b51e03c16b447272f99614cd5556a271bbcdfeef8c4b88a94489c13326073e
+        exitCode: 255
+        finishedAt: "2022-12-02T03:41:28Z"
+        reason: Error
+        startedAt: "2022-11-30T09:00:16Z"
+    name: traefik
+    ready: true
+    restartCount: 9
+    started: true
+    state:
+      running:
+        startedAt: "2022-12-02T03:41:46Z"
+  hostIP: 172.19.34.104
+  phase: Running
+  podIP: 10.42.0.90
+  podIPs:
+  - ip: 10.42.0.90
+  qosClass: BestEffort
+  startTime: "2022-07-04T10:50:08Z"
