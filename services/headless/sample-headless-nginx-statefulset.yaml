@@ -1,0 +1,73 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-ivan
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: test-ivan
+  labels:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: testing-headless
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/part-of: testing-headless
+  ports:
+  - port: 80
+    targetPort: http
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nginx
+  namespace: test-ivan
+  labels:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: testing-headless
+    app.kubernetes.io/version: latest
+spec:
+  replicas: 3
+  serviceName: nginx
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx
+      app.kubernetes.io/part-of: testing-headless
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nginx
+        app.kubernetes.io/part-of: testing-headless
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client
+  namespace: test-ivan
+  labels:
+    app.kubernetes.io/name: nginx-client
+    app.kubernetes.io/component: client
+    app.kubernetes.io/part-of: testing-headless
+spec:
+  containers:
+  - name: nginx-client
+    image: alpine:3.16
+    imagePullPolicy: IfNotPresent
+    command: ['/bin/sh']
+    args: ['-c', 'apk add bind-tools curl; until [ $(curl -sSkL http://nginx-2.nginx:80 | grep -c Welcome) -ge 1 ]; do echo "Trying again in a moment"; sleep 2s; done; sleep 5s; dig nginx.test-ivan.svc.cluster.local. SRV ']
+
